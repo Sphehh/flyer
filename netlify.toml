@@ -1,0 +1,13 @@
+[build]
+  command = ""
+  publish = "."
+
+[functions]
+  directory = "functions"
+
+[context.production.environment]
+  PIAPI_KEY = "@piapi-key"
+  PAYFAST_MERCHANT_ID = "@payfast-merchant-id"
+  PAYFAST_MERCHANT_KEY = "@payfast-merchant-key"
+  PAYFAST_PASSPHRASE = "@payfast-passphrase"
+  FAUNADB_SECRET = "@faunadb-secret"
