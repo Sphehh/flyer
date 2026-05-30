@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlyerCraft – AI Church Flyer Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">
+      <div class="logo-mark">✦</div> FlyerCraft
+    </a>
+    <div class="nav-right" id="user-area">
+      <button class="btn-primary" id="login-btn" onclick="document.getElementById('login-modal').style.display='block'">Login / Sign Up</button>
+      <span id="credits-display" style="display:none;">0 credits</span>
+      <button class="btn-secondary" id="logout-btn" style="display:none;">Logout</button>
+    </div>
+  </nav>
+
+  <!-- HERO (logged out) -->
+  <section id="landing" class="hero">
+    <div class="hero-tag">✦ AI-Powered Church Flyers</div>
+    <h1>Beautiful flyers, <em>generated</em><br />in seconds.</h1>
+    <p>Pick a template, enter your church details, upload speakers' photos, remove backgrounds — and let AI craft a stunning flyer.</p>
+    <div id="templates-grid" class="templates"></div>
+  </section>
+
+  <!-- USER DASHBOARD (logged in) -->
+  <section id="dashboard" style="display:none;">
+    <div class="dashboard-container">
+      <h2>Your Projects</h2>
+      <div id="projects-list" class="projects-grid"></div>
+      <button id="new-project-btn" class="btn-primary">+ Create New Flyer</button>
+      <div class="credit-packs">
+        <h3>Buy Credits</h3>
+        <div class="pack-row">
+          <button onclick="buyCredits(10)">10 Credits – R99.90</button>
+          <button onclick="buyCredits(20)">20 Credits – R199.80</button>
+          <button onclick="buyCredits(50)">50 Credits – R499.50</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+      <h2>Welcome back</h2>
+      <div data-netlify-identity-button></div>
+    </div>
+  </div>
+
+  <!-- FLYER EDITOR (replaces dashboard/landing when creating) -->
+  <div id="editor-panel" style="display:none;"></div>
+
+  <!-- RESULT AREA -->
+  <div id="result-area" style="display:none;">
+    <div class="result-card">
+      <div class="result-header">
+        <h3>Your Generated Flyer</h3>
+        <button class="btn-secondary" onclick="resetToEditor()">Edit & Regenerate</button>
+      </div>
+      <div class="result-body">
+        <div class="status-bar" id="status-bar">
+          <div class="status-dot"></div>
+          <span id="status-text">Generating your flyer...</span>
+        </div>
+        <img id="result-img" src="" alt="Generated flyer" style="display:none" />
+        <div id="debug-details" style="display:none;"><pre id="debug-box"></pre></div>
+        <div class="download-actions" id="download-actions" style="display:none;">
+          <a id="download-link" class="btn-primary" download="church-flyer.png">↓ Download PNG</a>
+          <button class="btn-secondary" onclick="resetToLanding()">Start New Flyer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built with FlyerCraft · Powered by <a href="https://piapi.ai" target="_blank">PiAPI</a> · AI flyers for your ministry
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
