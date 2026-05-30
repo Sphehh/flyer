@@ -1,20 +1,23 @@
-const faunadb = require('faunadb');
-const q = faunadb.query;
-const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET });
 const fetch = require('node-fetch');
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 exports.handler = async (event, context) => {
   const { user } = context.clientContext;
   if (!user) return { statusCode: 401, body: 'Unauthorized' };
 
   // Get user credits
-  let userDoc;
-  try {
-    userDoc = await client.query(q.Get(q.Match(q.Index('users_by_netlify_id'), user.sub)));
-  } catch (e) {
-    return { statusCode: 404, body: 'User not found' };
-  }
-  if (userDoc.data.credits < 2) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('credits')
+    .eq('netlify_id', user.sub)
+    .single();
+
+  if (error || !data || data.credits < 2) {
     return { statusCode: 402, body: JSON.stringify({ error: 'Insufficient credits' }) };
   }
 
@@ -38,8 +41,6 @@ exports.handler = async (event, context) => {
     if (piData.code !== 200) throw new Error(piData.message);
 
     const taskId = piData.data.task_id;
-
-    // Poll for result (simple polling here, can be improved)
     let imageUrl = null;
     for (let i = 0; i < 45; i++) {
       await new Promise(r => setTimeout(r, 4000));
@@ -58,7 +59,10 @@ exports.handler = async (event, context) => {
     if (!imageUrl) throw new Error('Timed out');
 
     // Deduct credits
-    await client.query(q.Update(userDoc.ref, { data: { credits: userDoc.data.credits - 2 } }));
+    await supabase
+      .from('users')
+      .update({ credits: data.credits - 2 })
+      .eq('netlify_id', user.sub);
 
     return { statusCode: 200, body: JSON.stringify({ image: imageUrl }) };
   } catch (error) {
