@@ -1,0 +1,26 @@
+[
+  {
+    "id": "sunday-worship",
+    "name": "Sunday Worship Experience",
+    "image": "https://via.placeholder.com/400x500?text=Sunday+Worship",
+    "prompt": "Design a vibrant, modern church flyer for a Sunday worship service. Use warm earth tones with gold accents. Include space for multiple speakers at the top with their photos.",
+    "speakers": 3,
+    "tags": ["Multi-speaker", "Gradient"]
+  },
+  {
+    "id": "revival-service",
+    "name": "Revival Worship Service",
+    "image": "https://via.placeholder.com/400x500?text=Revival",
+    "prompt": "Create a professional, elegant church flyer for a revival service. Use deep blue and gold colors. Design should be sophisticated and inviting.",
+    "speakers": 1,
+    "tags": ["Single speaker", "Deep blue"]
+  },
+  {
+    "id": "youth-event",
+    "name": "Youth Ministry Event",
+    "image": "https://via.placeholder.com/400x500?text=Youth",
+    "prompt": "Design a vibrant, energetic youth ministry flyer. Use bright, modern colors. Include multiple speaker spots for youth leaders.",
+    "speakers": 2,
+    "tags": ["Youth", "Modern"]
+  }
+]
