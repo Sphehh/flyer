@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>FlyerCraft Admin</title>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; }
+    .section { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <div id="admin-content" style="display:none;">
+    <div class="section">
+      <h2>Manage Prompts</h2>
+      <textarea id="prompts-editor" style="width:100%; height:300px;"></textarea>
+      <button onclick="savePrompts()">Save Prompts</button>
+    </div>
+    <div class="section">
+      <h2>Manage Users</h2>
+      <table id="users-table">
+        <tr><th>Email</th><th>Credits</th><th>Action</th></tr>
+      </table>
+    </div>
+  </div>
+  <div id="unauthorized" style="display:none;">Access denied. You are not an admin.</div>
+  <script>
+    netlifyIdentity.init();
+    netlifyIdentity.on('init', async (user) => {
+      if (user) {
+        const token = await user.jwt();
+        const res = await fetch('/.netlify/functions/check-admin', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          document.getElementById('admin-content').style.display = 'block';
+          loadPromptsForAdmin();
+          loadUsers();
+        } else {
+          document.getElementById('unauthorized').style.display = 'block';
+        }
+      } else {
+        document.getElementById('unauthorized').style.display = 'block';
+      }
+    });
+    netlifyIdentity.on('login', () => location.reload());
+    async function loadPromptsForAdmin() {
+      const res = await fetch('/prompts.json');
+      const data = await res.json();
+      document.getElementById('prompts-editor').value = JSON.stringify(data, null, 2);
+    }
+    async function savePrompts() {
+      const token = await netlifyIdentity.currentUser().jwt();
+      await fetch('/.netlify/functions/save-prompts', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: document.getElementById('prompts-editor').value
+      });
+      alert('Prompts saved.');
+    }
+    async function loadUsers() {
+      const token = await netlifyIdentity.currentUser().jwt();
+      const res = await fetch('/.netlify/functions/admin-users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const users = await res.json();
+      const table = document.getElementById('users-table');
+      users.forEach(u => {
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${u.email}</td>
+          <td>${u.credits}</td>
+          <td><input type="number" id="credits-${u.id}" value="${u.credits}" size="4"/>
+              <button onclick="updateUserCredits('${u.id}')">Update</button></td>
+        `;
+      });
+    }
+    window.updateUserCredits = async function(userId) {
+      const token = await netlifyIdentity.currentUser().jwt();
+      const newCredits = document.getElementById(`credits-${userId}`).value;
+      await fetch('/.netlify/functions/user-credits', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, amount: Number(newCredits) })
+      });
+      alert('Updated.');
+      loadUsers();
+    };
+  </script>
+</body>
+</html>
