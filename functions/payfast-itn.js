@@ -1,10 +1,13 @@
 const crypto = require('crypto');
-const faunadb = require('faunadb');
-const q = faunadb.query;
-const client = new faunadb.Client({ secret: process.env.FAUNADB_SECRET });
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 exports.handler = async (event) => {
-  const pfData = event.body; // already parsed by Netlify
+  const pfData = event.body;
   const pfParamString = Object.keys(pfData)
     .filter(k => k !== 'signature')
     .sort()
@@ -17,16 +20,26 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: 'Invalid signature' };
   }
 
-  // Verify with PayFast (optional but recommended)
-  // ...
-
   const netlifyUserId = pfData.custom_str1;
   const creditsPurchased = parseInt(pfData.item_name); // e.g., "10 Credits"
-  try {
-    const userDoc = await client.query(q.Get(q.Match(q.Index('users_by_netlify_id'), netlifyUserId)));
-    await client.query(q.Update(userDoc.ref, { data: { credits: userDoc.data.credits + creditsPurchased } }));
-  } catch (e) {
-    // User not found, maybe create?
+
+  // Get current credits
+  const { data: current, error: fetchError } = await supabase
+    .from('users')
+    .select('credits')
+    .eq('netlify_id', netlifyUserId)
+    .single();
+
+  if (fetchError || !current) {
+    // User not found — create with purchased credits
+    await supabase
+      .from('users')
+      .insert({ netlify_id: netlifyUserId, email: pfData.email_address, credits: creditsPurchased });
+  } else {
+    await supabase
+      .from('users')
+      .update({ credits: current.credits + creditsPurchased })
+      .eq('netlify_id', netlifyUserId);
   }
 
   return { statusCode: 200, body: 'OK' };
