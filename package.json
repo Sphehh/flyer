@@ -1,0 +1,12 @@
+{
+  "name": "flyercraft",
+  "version": "1.0.0",
+  "description": "AI Church Flyer Generator",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "faunadb": "^4.8.0",
+    "node-fetch": "^2.7.0",
+    "@octokit/rest": "^20.1.1"
+  }
+}
